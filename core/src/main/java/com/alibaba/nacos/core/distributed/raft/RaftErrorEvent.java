@@ -21,19 +21,19 @@ import com.alibaba.nacos.common.notify.Event;
 /**
  * The RAFT protocol runs an exception event. If this event is published, it means that the current raft Group cannot
  * continue to run normally
- *
+ * raft协议出错
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public class RaftErrorEvent extends Event {
-    
+
     private static final long serialVersionUID = 3016514657754158167L;
-    
+
     private String groupName;
-    
+
     public String getGroupName() {
         return groupName;
     }
-    
+
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }

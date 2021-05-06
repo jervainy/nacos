@@ -22,7 +22,7 @@ import java.util.Collection;
 
 /**
  * Publish this event when the node list changes，All interested in the node list change event can listen to this event.
- *
+ * 节点变动时的事件
  * <ul>
  *     <li>{@link com.alibaba.nacos.core.distributed.ProtocolManager}</li>
  *     <li>{@link com.alibaba.nacos.naming.core.DistroMapper}</li>
@@ -32,40 +32,40 @@ import java.util.Collection;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public class MembersChangeEvent extends Event {
-    
+
     private static final long serialVersionUID = 7308126651076668976L;
-    
+
     private Collection<Member> members;
-    
+
     public static MemberChangeEventBuilder builder() {
         return new MemberChangeEventBuilder();
     }
-    
+
     public Collection<Member> getMembers() {
         return members;
     }
-    
+
     public void setMembers(Collection<Member> members) {
         this.members = members;
     }
-    
+
     @Override
     public String toString() {
         return "MembersChangeEvent{" + "members=" + members + ", no=" + sequence() + '}';
     }
-    
+
     public static final class MemberChangeEventBuilder {
-        
+
         private Collection<Member> allMembers;
-        
+
         private MemberChangeEventBuilder() {
         }
-        
+
         public MemberChangeEventBuilder members(Collection<Member> allMembers) {
             this.allMembers = allMembers;
             return this;
         }
-        
+
         /**
          * build MemberChangeEvent.
          *

@@ -49,35 +49,35 @@ import static com.alibaba.nacos.sys.env.Constants.USE_ONLY_SITE_INTERFACES;
  * @author Nacos
  */
 public class InetUtils {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(InetUtils.class);
-    
+
     private static String selfIP;
-    
+
     private static boolean useOnlySiteLocalInterface = false;
-    
+
     private static boolean preferHostnameOverIP = false;
-    
+
     private static final List<String> PREFERRED_NETWORKS = new ArrayList<String>();
-    
+
     private static final List<String> IGNORED_INTERFACES = new ArrayList<String>();
-    
+
     private static Pattern domainPattern = Pattern
             .compile("[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\\.?");
-    
+
     static {
         NotifyCenter.registerToSharePublisher(IPChangeEvent.class);
-        
+
         useOnlySiteLocalInterface = Boolean.parseBoolean(EnvUtil.getProperty(USE_ONLY_SITE_INTERFACES));
-        
+
         List<String> networks = EnvUtil.getPropertyList(Constants.PREFERRED_NETWORKS);
         PREFERRED_NETWORKS.addAll(networks);
-        
+
         List<String> interfaces = EnvUtil.getPropertyList(Constants.IGNORED_INTERFACES);
         IGNORED_INTERFACES.addAll(interfaces);
-        
+
         final long delayMs = Long.getLong("nacos.core.inet.auto-refresh", 30_000L);
-        
+
         Runnable ipAutoRefresh = new Runnable() {
             @Override
             public void run() {
@@ -93,11 +93,11 @@ public class InetUtils {
                 String tmpSelfIP = nacosIP;
                 if (StringUtils.isBlank(tmpSelfIP)) {
                     preferHostnameOverIP = Boolean.getBoolean(SYSTEM_PREFER_HOSTNAME_OVER_IP);
-                    
+
                     if (!preferHostnameOverIP) {
                         preferHostnameOverIP = Boolean.parseBoolean(EnvUtil.getProperty(PREFER_HOSTNAME_OVER_IP));
                     }
-                    
+
                     if (preferHostnameOverIP) {
                         InetAddress inetAddress;
                         try {
@@ -131,14 +131,14 @@ public class InetUtils {
                 selfIP = tmpSelfIP;
             }
         };
-        
+
         ipAutoRefresh.run();
     }
-    
+
     public static String getSelfIP() {
         return selfIP;
     }
-    
+
     /**
      * findFirstNonLoopbackAddress.
      *
@@ -146,7 +146,7 @@ public class InetUtils {
      */
     public static InetAddress findFirstNonLoopbackAddress() {
         InetAddress result = null;
-        
+
         try {
             int lowest = Integer.MAX_VALUE;
             for (Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
@@ -159,7 +159,7 @@ public class InetUtils {
                     } else {
                         continue;
                     }
-                    
+
                     if (!ignoreInterface(ifc.getDisplayName())) {
                         for (Enumeration<InetAddress> addrs = ifc.getInetAddresses(); addrs.hasMoreElements(); ) {
                             InetAddress address = addrs.nextElement();
@@ -176,22 +176,22 @@ public class InetUtils {
         } catch (IOException ex) {
             LOG.error("Cannot get first non-loopback address", ex);
         }
-        
+
         if (result != null) {
             return result;
         }
-        
+
         try {
             return InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
             LOG.warn("Unable to retrieve localhost");
         }
-        
+
         return null;
     }
-    
+
     private static boolean isPreferredAddress(InetAddress address) {
-        if (useOnlySiteLocalInterface) {
+        if (useOnlySiteLocalInterface) { // 私网地址
             final boolean siteLocalAddress = address.isSiteLocalAddress();
             if (!siteLocalAddress) {
                 LOG.debug("Ignoring address: " + address.getHostAddress());
@@ -207,10 +207,10 @@ public class InetUtils {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     private static boolean ignoreInterface(String interfaceName) {
         for (String regex : IGNORED_INTERFACES) {
             if (interfaceName.matches(regex)) {
@@ -220,9 +220,9 @@ public class InetUtils {
         }
         return false;
     }
-    
+
     /**
-     * juege str is right domain.（Check only rule）
+     * juege str is right domain.（Check only rule）例如：abc-def.com.
      *
      * @param str nacosIP
      * @return nacosIP is domain
@@ -233,37 +233,37 @@ public class InetUtils {
         }
         return domainPattern.matcher(str).matches();
     }
-    
+
     /**
      * {@link com.alibaba.nacos.core.cluster.ServerMemberManager} is listener.
      */
     @SuppressWarnings({"PMD.ClassNamingShouldBeCamelRule", "checkstyle:AbbreviationAsWordInName"})
     public static class IPChangeEvent extends SlowEvent {
-        
+
         private String oldIP;
-        
+
         private String newIP;
-        
+
         public String getOldIP() {
             return oldIP;
         }
-        
+
         public void setOldIP(String oldIP) {
             this.oldIP = oldIP;
         }
-        
+
         public String getNewIP() {
             return newIP;
         }
-        
+
         public void setNewIP(String newIP) {
             this.newIP = newIP;
         }
-        
+
         @Override
         public String toString() {
             return "IPChangeEvent{" + "oldIP='" + oldIP + '\'' + ", newIP='" + newIP + '\'' + '}';
         }
     }
-    
+
 }

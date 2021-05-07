@@ -31,20 +31,21 @@ import java.util.Set;
  * @author xiweng.yy
  */
 public class DistroHttpCombinedKeyDelayTask extends DistroDelayTask {
-    
+
     private final int batchSize;
-    
+
     private final Set<String> actualResourceKeys = new HashSet<>();
-    
+
     public DistroHttpCombinedKeyDelayTask(DistroKey distroKey, DataOperation action, long delayTime, int batchSize) {
         super(distroKey, action, delayTime);
         this.batchSize = batchSize;
     }
-    
+
     public Set<String> getActualResourceKeys() {
         return actualResourceKeys;
     }
-    
+
+    // TODO ??????
     @Override
     public void merge(AbstractDelayTask task) {
         actualResourceKeys.addAll(((DistroHttpCombinedKeyDelayTask) task).getActualResourceKeys());
@@ -55,7 +56,7 @@ public class DistroHttpCombinedKeyDelayTask extends DistroDelayTask {
             setLastProcessTime(task.getLastProcessTime());
         }
     }
-    
+
     @Override
     public DistroKey getDistroKey() {
         DistroKey taskKey = super.getDistroKey();

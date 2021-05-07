@@ -26,17 +26,17 @@ import com.alibaba.nacos.core.distributed.distro.entity.DistroKey;
  * @author xiweng.yy
  */
 public class DistroDelayTask extends AbstractDelayTask {
-    
+
     private final DistroKey distroKey;
-    
+
     private DataOperation action;
-    
+
     private long createTime;
-    
+
     public DistroDelayTask(DistroKey distroKey, long delayTime) {
         this(distroKey, DataOperation.CHANGE, delayTime);
     }
-    
+
     public DistroDelayTask(DistroKey distroKey, DataOperation action, long delayTime) {
         this.distroKey = distroKey;
         this.action = action;
@@ -44,24 +44,25 @@ public class DistroDelayTask extends AbstractDelayTask {
         setLastProcessTime(createTime);
         setTaskInterval(delayTime);
     }
-    
+
     public DistroKey getDistroKey() {
         return distroKey;
     }
-    
+
     public DataOperation getAction() {
         return action;
     }
-    
+
     public long getCreateTime() {
         return createTime;
     }
-    
+
     @Override
     public void merge(AbstractDelayTask task) {
         if (!(task instanceof DistroDelayTask)) {
             return;
         }
+        // 以新传入的DelayTask属性为准，设置较大的createTime(前提是action不一致)
         DistroDelayTask newTask = (DistroDelayTask) task;
         if (!action.equals(newTask.getAction()) && createTime < newTask.getCreateTime()) {
             action = newTask.getAction();

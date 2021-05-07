@@ -37,9 +37,9 @@ import java.util.Map;
  */
 @SuppressWarnings("PMD.UndefineMagicConstantRule")
 public class OriginTrackedPropertiesLoader {
-    
+
     private final Resource resource;
-    
+
     /**
      * Create a new {@link OriginTrackedPropertiesLoader} instance.
      *
@@ -49,7 +49,7 @@ public class OriginTrackedPropertiesLoader {
         Assert.notNull(resource, "Resource must not be null");
         this.resource = resource;
     }
-    
+
     /**
      * Load {@code .properties} data and return a map of {@code String} -> {@link OriginTrackedValue}.
      *
@@ -59,7 +59,7 @@ public class OriginTrackedPropertiesLoader {
     public Map<String, OriginTrackedValue> load() throws IOException {
         return load(true);
     }
-    
+
     /**
      * Load {@code .properties} data and return a map of {@code String} -> {@link OriginTrackedValue}.
      *
@@ -91,13 +91,13 @@ public class OriginTrackedPropertiesLoader {
             return result;
         }
     }
-    
+
     private void put(Map<String, OriginTrackedValue> result, String key, OriginTrackedValue value) {
         if (!key.isEmpty()) {
             result.put(key, value);
         }
     }
-    
+
     private String loadKey(StringBuilder buffer, OriginTrackedPropertiesLoader.CharacterReader reader)
             throws IOException {
         buffer.setLength(0);
@@ -116,7 +116,7 @@ public class OriginTrackedPropertiesLoader {
         }
         return buffer.toString();
     }
-    
+
     private OriginTrackedValue loadValue(StringBuilder buffer, OriginTrackedPropertiesLoader.CharacterReader reader,
             boolean splitLists) throws IOException {
         buffer.setLength(0);
@@ -131,37 +131,37 @@ public class OriginTrackedPropertiesLoader {
         Origin origin = new TextResourceOrigin(this.resource, location);
         return OriginTrackedValue.of(buffer.toString(), origin);
     }
-    
+
     /**
      * Reads characters from the source resource, taking care of skipping comments, handling multi-line values and
      * tracking {@code '\'} escapes.
      */
     private static class CharacterReader implements Closeable {
-        
+
         private final String[] escapes = {"trnf", "\t\r\n\f"};
-        
+
         private final LineNumberReader reader;
-        
+
         private int columnNumber = -1;
-        
+
         private boolean escaped;
-        
+
         private int character;
-        
+
         CharacterReader(Resource resource) throws IOException {
             this.reader = new LineNumberReader(
                     new InputStreamReader(resource.getInputStream(), StandardCharsets.ISO_8859_1));
         }
-        
+
         @Override
         public void close() throws IOException {
             this.reader.close();
         }
-        
+
         public boolean read() throws IOException {
             return read(false);
         }
-        
+
         public boolean read(boolean wrappedLine) throws IOException {
             this.escaped = false;
             this.character = this.reader.read();
@@ -180,14 +180,14 @@ public class OriginTrackedPropertiesLoader {
             }
             return !isEndOfFile();
         }
-        
+
         private void skipLeadingWhitespace() throws IOException {
             while (isWhiteSpace()) {
                 this.character = this.reader.read();
                 this.columnNumber++;
             }
         }
-        
+
         private void skipComment() throws IOException {
             if (this.character == '#' || this.character == '!') {
                 while (this.character != '\n' && this.character != -1) {
@@ -197,7 +197,7 @@ public class OriginTrackedPropertiesLoader {
                 read();
             }
         }
-        
+
         private void readEscaped() throws IOException {
             this.character = this.reader.read();
             int escapeIndex = escapes[0].indexOf(this.character);
@@ -210,7 +210,7 @@ public class OriginTrackedPropertiesLoader {
                 readUnicode();
             }
         }
-        
+
         private void readUnicode() throws IOException {
             this.character = 0;
             for (int i = 0; i < 4; i++) {
@@ -226,34 +226,35 @@ public class OriginTrackedPropertiesLoader {
                 }
             }
         }
-        
+
         public boolean isWhiteSpace() {
             return !this.escaped && (this.character == ' ' || this.character == '\t' || this.character == '\f');
         }
-        
+
         public boolean isEndOfFile() {
             return this.character == -1;
         }
-        
+
         public boolean isEndOfLine() {
             return this.character == -1 || (!this.escaped && this.character == '\n');
         }
-        
+
         public boolean isListDelimiter() {
             return !this.escaped && this.character == ',';
         }
-        
+
         public boolean isPropertyDelimiter() {
+            // 读取xx=xx或者xx:xx
             return !this.escaped && (this.character == '=' || this.character == ':');
         }
-        
+
         public char getCharacter() {
             return (char) this.character;
         }
-        
+
         public TextResourceOrigin.Location getLocation() {
             return new TextResourceOrigin.Location(this.reader.getLineNumber(), this.columnNumber);
         }
-        
+
     }
 }
